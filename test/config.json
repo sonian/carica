@@ -1,0 +1,4 @@
+{"test-json": "test-json",
+ "nested-one-json": {"test-json": "test-json"},
+ "nested-multi-json": {"test-json": {"test-json": "test-json"}},
+ "json-only": {"nested": 42}}
