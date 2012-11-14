@@ -14,6 +14,11 @@ It offers:
 
 ## Setup
 
+```clojure
+[sonian/carica "1.0.0"]
+;; carica is compatible with clojure 1.4+
+```
+
 Carica looks for the config files on the classpath.
 
 In your project.clj, add a directory to your resources-path, for these
