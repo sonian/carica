@@ -1,4 +1,4 @@
-(defproject sonian/carica "1.0.1-SNAPSHOT"
+(defproject sonian/carica "1.0.1"
   :description "A flexible configuration library"
   :url "https://github.com/sonian/carica"
   :dependencies [[cheshire "4.0.4"]
