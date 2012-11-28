@@ -118,6 +118,17 @@ Or:
 
 Only the provided values will be overwritten.
 
+## Mind the Classpath
+
+Carica looks for resources on the classpath and merges them in order,
+meaning that configuration files earlier in the classpath will take
+precedence over those that come later.
+
+When using Leiningen the classpath is built such that test comes
+first, then src, followed by resources-path. Keep the order in mind
+when dealing with multiple configuration files with Leiningen and when
+building the classpath by hand.
+
 ## License
 
 Copyright (C) 2012 Sonian, Inc.

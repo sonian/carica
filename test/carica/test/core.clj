@@ -10,9 +10,10 @@
       (testing "with the ability to get at nested values"
         (is (= "test-clj" (config :nested-one-clj :test-clj)))))
     (testing "should merge all maps on the classpath"
+      (is (= true (config :from-test)))
       (is (= true (config :from-etc)))
       (testing "but the first on the classpath should win"
-        (is (= "etc" (config :merged-val)))))
+        (is (= "test" (config :merged-val)))))
     (testing "should be overridden with override-config"
       (with-redefs [config (override-config
                             {:nested-multi-json {:test-json {:test-json 21}

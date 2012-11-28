@@ -8,12 +8,11 @@
   "Search the classpath for resources matching the given path"
   [path]
   (when path
-    (reverse
-     (enumeration-seq
-      (.getResources
-       (.getContextClassLoader
-        (Thread/currentThread))
-       path)))))
+    (enumeration-seq
+     (.getResources
+      (.getContextClassLoader
+       (Thread/currentThread))
+      path))))
 
 (defn merge-nested [v1 v2]
   (if (and (map? v1) (map? v2))
