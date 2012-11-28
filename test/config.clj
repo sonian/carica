@@ -1,5 +1,4 @@
-{:from-etc false
- :from-test true
+{:from-test true
 
  :nil-val nil
 
