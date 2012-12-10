@@ -24,8 +24,14 @@ Carica looks for the config files on the classpath.
 In your project.clj, add a directory to your resources-path, for these
 examples, I'll be using "etc":
 
+* Leiningen 1
 ```clojure
 :resources-path "etc"
+```
+
+* Leiningen 2
+```clojure
+:resource-paths ["etc"]
 ```
 
 Now, create an "etc" directory at the root of your project. Create
