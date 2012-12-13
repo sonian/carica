@@ -1,7 +1,7 @@
 (defproject sonian/carica "1.0.1"
   :description "A flexible configuration library"
   :url "https://github.com/sonian/carica"
-  :dependencies [[cheshire "4.0.4"]
+  :dependencies [[cheshire "5.0.1"]
                  [org.clojure/tools.logging "0.2.3"]]
   :profiles {:dev
              {:resource-paths ["etc"],
