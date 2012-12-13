@@ -2,7 +2,7 @@
   :description "A flexible configuration library"
   :url "https://github.com/sonian/carica"
   :dependencies [[cheshire "5.0.1"]
-                 [org.clojure/tools.logging "0.2.3"]]
+                 [org.clojure/tools.logging "0.2.4"]]
   :profiles {:dev
              {:resource-paths ["etc"],
               :dependencies [[org.clojure/clojure "1.4.0"]]}
