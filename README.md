@@ -15,7 +15,7 @@ It offers:
 ## Setup
 
 ```clojure
-[sonian/carica "1.0.0"]
+[sonian/carica "1.0.1"]
 ;; carica is compatible with clojure 1.4+
 ```
 
@@ -142,7 +142,7 @@ using that feature, then you can exclude Cheshire from your
 dependencies, like this:
 
 ```clojure
-[sonian/carica "1.0.0" :exclusions [[cheshire]]]
+[sonian/carica "1.0.1" :exclusions [[cheshire]]]
 ```
 
 ## License
