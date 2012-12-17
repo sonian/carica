@@ -135,6 +135,16 @@ first, then src, followed by resources-path. Keep the order in mind
 when dealing with multiple configuration files with Leiningen and when
 building the classpath by hand.
 
+## Optional Dependencies
+
+Carica only uses Cheshire for JSON config parsing, so if you aren't
+using that feature, then you can exclude Cheshire from your
+dependencies, like this:
+
+```clojure
+[sonian/carica "1.0.0" :exclusions [[cheshire]]]
+```
+
 ## License
 
 Copyright (C) 2012 Sonian, Inc.
