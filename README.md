@@ -15,7 +15,7 @@ It offers:
 ## Setup
 
 ```clojure
-[sonian/carica "1.0.0"]
+[sonian/carica "1.0.1"]
 ;; carica is compatible with clojure 1.4+
 ```
 
@@ -134,6 +134,16 @@ When using Leiningen the classpath is built such that test comes
 first, then src, followed by resources-path. Keep the order in mind
 when dealing with multiple configuration files with Leiningen and when
 building the classpath by hand.
+
+## Optional Dependencies
+
+Carica only uses Cheshire for JSON config parsing, so if you aren't
+using that feature, then you can exclude Cheshire from your
+dependencies, like this:
+
+```clojure
+[sonian/carica "1.0.1" :exclusions [[cheshire]]]
+```
 
 ## License
 
