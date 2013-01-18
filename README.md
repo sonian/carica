@@ -21,21 +21,10 @@ It offers:
 
 Carica looks for the config files on the classpath.
 
-In your project.clj, add a directory to your resources-path, for these
-examples, I'll be using "etc":
-
-* Leiningen 1
-```clojure
-:resources-path "etc"
-```
-
-* Leiningen 2
-```clojure
-:resource-paths ["etc"]
-```
-
-Now, create an "etc" directory at the root of your project. Create
-and open "etc/config.clj" in your favorite editor. 
+Leiningen will add a directory called "resources" to the classpath even 
+though the directory is not created by default, so create a "resources" 
+directory at the root of your project. Now, create and open "resources/config.clj" 
+in your favorite editor.
 
 ```clojure
 {:foobar-timeout 300 #_"In seconds"
