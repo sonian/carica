@@ -69,3 +69,9 @@
 (deftest nil-resources-are-handled
   (is (= (get-configs [(resources "config.clj")])
          (get-configs [nil (resources "config.clj") nil [nil nil]]))))
+
+(deftest disable-read-eval
+  (System/setErr (java.io.PrintStream. (java.io.FileOutputStream. "/dev/null")))
+  ;; ^^ even though reader RuntimeException is handled, it still spews, so mute.
+  (is (= :not-allowed (try (get-configs [(resources "config2.clj")])
+                           (catch Exception e :not-allowed)))))

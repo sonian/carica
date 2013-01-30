@@ -39,7 +39,7 @@
   (try
     (eval
      (try
-       (read-string (slurp resource))
+       (binding [*read-eval* false] (read-string (slurp resource)))
        (catch Throwable t
          (log/warn t "error reading config" resource)
          (throw
