@@ -70,11 +70,17 @@
   (is (= (get-configs [(resources "config.clj")])
          (get-configs [nil (resources "config.clj") nil [nil nil]]))))
 
+(defmacro without-err-printing
+  "though reader RuntimeException is handled, it still spews, so mute."
+  [& body]
+  `(let [err# System/err]
+     (try
+       (System/setErr (java.io.PrintStream.
+                       (java.io.FileOutputStream. "/dev/null")))
+       ~@body
+       (finally (System/setErr err#)))))
+
 (deftest disable-read-eval
-  (let [err System/err]
-    (try
-      (System/setErr (java.io.PrintStream.
-                      (java.io.FileOutputStream. "/dev/null")))
-      ;; ^^ though reader RuntimeException is handled, it still spews, so mute.
-      (is (thrown? Exception (get-configs [(resources "config2.clj")])))
-      (finally (System/setErr err)))))
+  (without-err-printing
+   (is (thrown? Exception (get-configs [(resources "config2.clj")])))))
+
