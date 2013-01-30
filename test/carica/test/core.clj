@@ -71,6 +71,10 @@
          (get-configs [nil (resources "config.clj") nil [nil nil]]))))
 
 (deftest disable-read-eval
-  (System/setErr (java.io.PrintStream. (java.io.FileOutputStream. "/dev/null")))
-  ;; ^^ even though reader RuntimeException is handled, it still spews, so mute.
-  (is (thrown? Exception (get-configs [(resources "config2.clj")]))))
+  (let [err System/err]
+    (try
+      (System/setErr (java.io.PrintStream.
+                      (java.io.FileOutputStream. "/dev/null")))
+      ;; ^^ though reader RuntimeException is handled, it still spews, so mute.
+      (is (thrown? Exception (get-configs [(resources "config2.clj")])))
+      (finally (System/setErr err)))))
