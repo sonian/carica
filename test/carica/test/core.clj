@@ -73,5 +73,4 @@
 (deftest disable-read-eval
   (System/setErr (java.io.PrintStream. (java.io.FileOutputStream. "/dev/null")))
   ;; ^^ even though reader RuntimeException is handled, it still spews, so mute.
-  (is (= :not-allowed (try (get-configs [(resources "config2.clj")])
-                           (catch Exception e :not-allowed)))))
+  (is (thrown? Exception (get-configs [(resources "config2.clj")]))))
