@@ -24,18 +24,13 @@
                             (memfn getPath)))
 
 (defmethod load-config "clj" [resource]
-  (try
-    (eval
-     (try
-       (read-string (slurp resource))
-       (catch Throwable t
-         (log/warn t "error reading config" resource)
-         (throw
-          (Exception. (str "error reading config " resource) t)))))
-    (catch Throwable t
-      (log/warn t "error evaling config" resource)
-      (throw
-       (Exception. (str "error evaling config " resource) t)))))
+  (binding [*read-eval* false]
+    (try
+      (read-string (slurp resource))
+      (catch Throwable t
+        (log/warn t "error reading config" resource)
+        (throw
+         (Exception. (str "error reading config " resource) t))))))
 
 (defmethod load-config "json" [resource]
   (with-open [s (.openStream resource)]
@@ -75,6 +70,26 @@
            n))
    resources))
 
+(defn eval-config
+  "Config middleware that will evaluate the config map.  This allows
+  arbitrary code to live in the config file.  It is often useful for
+  coercing config values to a particular type."
+  [f]
+  (fn [cfg-map]
+    (try
+      (eval (f cfg-map))
+      (catch Throwable t
+        (log/warn t "error evaling config" cfg-map)
+        (throw
+         (Exception. (str "error evaling config " cfg-map) t))))))
+
+(defn cache-config
+  "Config middleware that will cache the config map so that it is
+  loaded only once."
+  [f]
+  (memoize (fn [cfg-map]
+             (f cfg-map))))
+
 (defn config*
   "Looks up the keys in the maps.  If not found, log and return nil."
   [m ks]
@@ -86,11 +101,20 @@
 (defn configurer
   "Given a the list of resources in the format expected by get-configs,
   return a function that can be used to search the configuration files
-  in the following manner"
-  [resources]
-  (let [configs (get-configs resources)]
-    (fn [& ks]
-      (config* configs ks))))
+  in the following manner.
+
+  Additionally, configurer can take a seq of config middleware. Each middleware
+  function is called with a single function as an input and should return a
+  function that takes the config map as an input.  See cache-config or
+  eval-config for example middleware.  Middleware is applied in the order in
+  which it is defined in the map."
+  ([resources]
+     (configurer resources []))
+  ([resources middleware]
+     (let [config-fn (reduce (fn [f mw] (mw f)) get-configs middleware)]
+       (fn [& ks]
+         (config* (config-fn resources)
+                  ks)))))
 
 (def ^:dynamic config
   "The default config function. It searches for carica.clj and carica.json
@@ -104,7 +128,9 @@
 
   ...one would call (config :address :street) to retrieve \"42 Main St.\""
   (configurer (concat (resources "config.json")
-                      (resources "config.clj"))))
+                      (resources "config.clj"))
+              [eval-config
+               cache-config]))
 
 (defn reduce-into-map [overrides]
   (let [[val & keys] (reverse overrides)]
