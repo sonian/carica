@@ -1,6 +1,7 @@
 (ns carica.core
   (:use [clojure.java.io :only [reader]])
   (:require [clojure.tools.logging :as log]
+            [clojure.tools.reader.edn :as edn]
             [clojure.walk :as walk]
             [cheshire.core :as json]))
 
@@ -24,13 +25,12 @@
                             (memfn getPath)))
 
 (defmethod load-config "clj" [resource]
-  (binding [*read-eval* false]
-    (try
-      (read-string (slurp resource))
-      (catch Throwable t
-        (log/warn t "error reading config" resource)
-        (throw
-         (Exception. (str "error reading config " resource) t))))))
+  (try
+    (edn/read-string (slurp resource))
+    (catch Throwable t
+      (log/warn t "error reading config" resource)
+      (throw
+       (Exception. (str "error reading config " resource) t)))))
 
 (defmethod load-config "json" [resource]
   (with-open [s (.openStream resource)]
