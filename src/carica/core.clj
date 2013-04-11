@@ -2,8 +2,20 @@
   (:use [clojure.java.io :only [reader]])
   (:require [clojure.tools.logging :as log]
             [clojure.tools.reader.edn :as edn]
-            [clojure.walk :as walk]
-            [cheshire.core :as json]))
+            [clojure.walk :as walk]))
+
+(def json-enabled?
+  (try
+    (require 'cheshire.core)
+    true
+    (catch Throwable _
+      false)))
+
+(defn ^:dynamic json-parse-stream
+  "Resolve and apply cheshire's json parsing dynamically."
+  [& args]
+  {:pre [json-enabled?]}
+  (apply (ns-resolve (symbol "cheshire.core") (symbol "parse-stream")) args))
 
 (defn resources
   "Search the classpath for resources matching the given path"
@@ -34,7 +46,7 @@
 
 (defmethod load-config "json" [resource]
   (with-open [s (.openStream resource)]
-    (-> s reader (json/parse-stream true))))
+    (-> s reader (json-parse-stream true))))
 
 (defn get-configs
   "Takes a data structure of config resources (URLs) in priority order and

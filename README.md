@@ -15,21 +15,16 @@ It offers:
 ## Setup
 
 ```clojure
-[sonian/carica "1.0.0"]
+[sonian/carica "1.0.2"]
 ;; carica is compatible with clojure 1.4+
 ```
 
 Carica looks for the config files on the classpath.
 
-In your project.clj, add a directory to your resources-path, for these
-examples, I'll be using "etc":
-
-```clojure
-:resources-path "etc"
-```
-
-Now, create an "etc" directory at the root of your project. Create
-and open "etc/config.clj" in your favorite editor. 
+Leiningen will add a directory called "resources" to the classpath even 
+though the directory is not created by default, so create a "resources" 
+directory at the root of your project. Now, create and open "resources/config.clj" 
+in your favorite editor.
 
 ```clojure
 {:foobar-timeout 300 #_"In seconds"
@@ -128,6 +123,16 @@ When using Leiningen the classpath is built such that test comes
 first, then src, followed by resources-path. Keep the order in mind
 when dealing with multiple configuration files with Leiningen and when
 building the classpath by hand.
+
+## Optional Dependencies
+
+Carica only uses Cheshire for JSON config parsing, so if you aren't
+using that feature, then you can exclude Cheshire from your
+dependencies, like this:
+
+```clojure
+[sonian/carica "1.0.2" :exclusions [[cheshire]]]
+```
 
 ## License
 
