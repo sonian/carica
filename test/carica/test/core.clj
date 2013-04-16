@@ -76,7 +76,7 @@
                        (fn [cfg-map]
                          (swap! call-count inc)
                          (f cfg-map)))
-        empty-cfg (configurer (resources "config.clj"))
+        empty-cfg (configurer (resources "config.clj") [])
         mdlware-cfg (configurer (resources "config.clj")
                                 [call-mdlware])
         cached-cfg (configurer (resources "config.clj")
