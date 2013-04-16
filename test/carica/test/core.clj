@@ -73,9 +73,9 @@
 (deftest test-middleware
   (let [call-count (atom 0)
         call-mdlware (fn [f]
-                       (fn [cfg-map]
+                       (fn [resources]
                          (swap! call-count inc)
-                         (f cfg-map)))
+                         (f resources)))
         empty-cfg (configurer (resources "config.clj") [])
         mdlware-cfg (configurer (resources "config.clj")
                                 [call-mdlware])

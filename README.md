@@ -105,16 +105,16 @@ can use the `cache-config` middleware.
 
 In typical middleware fashion, eval-config and cache-config are
 functions that take a function as their only argument and return a
-function that takes the cfg-map as its only input.  For instance, the
-cache-config function:
+function that takes a list of resources as its only input.  For
+instance, the cache-config function:
 
 ```clojure
 (defn cache-config
   "Config middleware that will cache the config map so that it is
   loaded only once."
   [f]
-  (memoize (fn [cfg-map]
-             (f cfg-map))))
+  (memoize (fn [resources]
+             (f resources))))
 ```
 
 ## Testing
@@ -169,6 +169,6 @@ dependencies, like this:
 
 ## License
 
-Copyright (C) 2012 Sonian, Inc.
+Copyright (C) 2013 Sonian, Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.
