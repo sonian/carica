@@ -92,7 +92,6 @@ want to have it evaluated, there is an `eval-config` middleware
 provided.  If you want the config to be read only once from disk, you
 can use the `cache-config` middleware.
 
-
 ```clojure
 (ns my-proj.config
   (:require [carica.core :refer [configurer
