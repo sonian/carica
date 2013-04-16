@@ -129,7 +129,7 @@
                   ks)))))
 
 (def ^:dynamic config
-  "The default config function. It searches for carica.clj and carica.json
+  "The default config function.  It searches for carica.clj and carica.json
   on the classpath (with json taking preference) and returns a fuction with
   the signature of (fn [& ks] ...)
 
@@ -159,7 +159,7 @@
 
 (def override-config
   "Useful for testing, override-config enables overriding config
-  values. It takes a series of keys and a replacement value.
+  values.  It takes a series of keys and a replacement value.
 
   E.g., these are all equivalent:
   (with-redefs [config (override-config {:address {:street \"42 Broadway\"}})
