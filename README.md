@@ -84,6 +84,38 @@ function using the `configurer` function.
 Calling `my-proj.config/config` will work the same as calling
 `carica.core/config` except that it will use your config file.
 
+## Middleware
+
+You can change the resulting config map in Carica by adding
+middleware.  For instance, if you trust the data you are reading and
+want to have it evaluated, there is an `eval-config` middleware
+provided.  If you want the config to be read only once from disk, you
+can use the `cache-config` middleware.
+
+```clojure
+(ns my-proj.config
+  (:require [carica.core :refer [configurer
+                                 resources]]))
+
+(def config (configurer (resources "proj_config.clj")
+                        [eval-config
+                         cache-config]))
+```
+
+In typical middleware fashion, eval-config and cache-config are
+functions that take a function as their only argument and return a
+function that takes a list of resources as its only input.  For
+instance, the cache-config function:
+
+```clojure
+(defn cache-config
+  "Config middleware that will cache the config map so that it is
+  loaded only once."
+  [f]
+  (memoize (fn [resources]
+             (f resources))))
+```
+
 ## Testing
 
 Sometimes, during tests, it's handy to be able to override config
@@ -136,6 +168,6 @@ dependencies, like this:
 
 ## License
 
-Copyright (C) 2012 Sonian, Inc.
+Copyright (C) 2013 Sonian, Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.

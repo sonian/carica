@@ -1,6 +1,7 @@
 (ns carica.core
   (:use [clojure.java.io :only [reader]])
   (:require [clojure.tools.logging :as log]
+            [clojure.tools.reader.edn :as edn]
             [clojure.walk :as walk]))
 
 (def json-enabled?
@@ -37,17 +38,11 @@
 
 (defmethod load-config "clj" [resource]
   (try
-    (eval
-     (try
-       (read-string (slurp resource))
-       (catch Throwable t
-         (log/warn t "error reading config" resource)
-         (throw
-          (Exception. (str "error reading config " resource) t)))))
+    (edn/read-string (slurp resource))
     (catch Throwable t
-      (log/warn t "error evaling config" resource)
+      (log/warn t "error reading config" resource)
       (throw
-       (Exception. (str "error evaling config " resource) t)))))
+       (Exception. (str "error reading config " resource) t)))))
 
 (defmethod load-config "json" [resource]
   (with-open [s (.openStream resource)]
@@ -87,6 +82,27 @@
            n))
    resources))
 
+(defn eval-config
+  "Config middleware that will evaluate the config map.  This allows
+  arbitrary code to live in the config file.  It is often useful for
+  coercing config values to a particular type."
+  [f]
+  (fn [resources]
+    (let [cfg-map (f resources)]
+      (try
+        (eval cfg-map)
+        (catch Throwable t
+          (log/warn t "error evaling config" cfg-map)
+          (throw
+           (Exception. (str "error evaling config " cfg-map) t)))))))
+
+(defn cache-config
+  "Config middleware that will cache the config map so that it is
+  loaded only once."
+  [f]
+  (memoize (fn [resources]
+             (f resources))))
+
 (defn config*
   "Looks up the keys in the maps.  If not found, log and return nil."
   [m ks]
@@ -95,17 +111,32 @@
       (log/warn ks "isn't a valid config")
       v)))
 
+(def default-middleware
+  "The default list of middleware carica uses."
+  [eval-config
+   cache-config])
+
 (defn configurer
   "Given a the list of resources in the format expected by get-configs,
   return a function that can be used to search the configuration files
-  in the following manner"
-  [resources]
-  (let [configs (get-configs resources)]
-    (fn [& ks]
-      (config* configs ks))))
+  in the following manner.
+
+  Additionally, configurer can take a seq of config middleware.  Each
+  middleware function is called with a single function as an input and
+  should return a function that takes the config map as an input.  See
+  cache-config or eval-config for example middleware.  Middleware is
+  applied in the order in which it is defined in the map.  If you do
+  not provide any middleware, then the default middlware will be used."
+  ([resources]
+     (configurer resources default-middleware))
+  ([resources middleware]
+     (let [config-fn (reduce (fn [f mw] (mw f)) get-configs middleware)]
+       (fn [& ks]
+         (config* (config-fn resources)
+                  ks)))))
 
 (def ^:dynamic config
-  "The default config function. It searches for carica.clj and carica.json
+  "The default config function.  It searches for carica.clj and carica.json
   on the classpath (with json taking preference) and returns a fuction with
   the signature of (fn [& ks] ...)
 
@@ -133,7 +164,7 @@
 
 (def override-config
   "Useful for testing, override-config enables overriding config
-  values. It takes a series of keys and a replacement value.
+  values.  It takes a series of keys and a replacement value.
 
   E.g., these are all equivalent:
   (with-redefs [config (override-config {:address {:street \"42 Broadway\"}})
