@@ -77,12 +77,16 @@ config.clj that you use for a different purpose. No problem. To
 override what files Carica loads you can create your own `config`
 function using the `configurer` function.
 
+If you override the default `config` function in this manner you must
+also override the `override-config` function if you intend to use it.
+
 ```clojure
 (ns my-proj.config
   (:require [carica.core :refer [configurer
                                  resources]]))
 
 (def config (configurer (resources "proj_config.clj")))
+(def override-config (overrider config))
 ```
 
 Calling `my-proj.config/config` will work the same as calling
