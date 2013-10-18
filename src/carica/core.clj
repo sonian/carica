@@ -135,7 +135,13 @@
          (config* (config-fn resources)
                   ks)))))
 
-(def ^:dynamic config
+(defn read-config []
+  (configurer (concat (resources "config.json")
+                      (resources "config.clj"))))
+
+(defonce config-state (atom (read-config)))
+
+(defn ^:dynamic config
   "The default config function.  It searches for carica.clj and carica.json
   on the classpath (with json taking preference) and returns a fuction with
   the signature of (fn [& ks] ...)
@@ -146,8 +152,11 @@
    :address {:street \"42 Main St.\" :city \"...\" ...}}
 
   ...one would call (config :address :street) to retrieve \"42 Main St.\""
-  (configurer (concat (resources "config.json")
-                      (resources "config.clj"))))
+  [& ks]
+  (apply @config-state ks))
+
+(defn reset-config! []
+  (reset! config-state (read-config)))
 
 (defn reduce-into-map [overrides]
   (let [[val & keys] (reverse overrides)]

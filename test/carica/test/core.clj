@@ -95,3 +95,13 @@
     (testing "Eval works"
       (is (= '(+ 1 1) (empty-cfg :eval-cfg)))
       (is (= 2 (eval-cfg :eval-cfg))))))
+
+(deftest test-reset
+  (let [t0 (config :time)]
+    (testing "Still cached without a reset"
+      (Thread/sleep 10)
+      (is (= t0 (config :time))))
+    (testing "Config is re-read after a reset"
+      (Thread/sleep 10)
+      (reset-config!))
+    (is (< t0 (config :time)))))
