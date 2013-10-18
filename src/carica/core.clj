@@ -100,8 +100,15 @@
   "Config middleware that will cache the config map so that it is
   loaded only once."
   [f]
-  (memoize (fn [resources]
-             (f resources))))
+  (let [mem (atom {})]
+    {:carica/options {:carica/mem mem}
+     :carica/fn
+     (fn [resources]
+       (if-let [e (find @mem resources)]
+         (val e)
+         (let [ret (f resources)]
+           (swap! mem assoc resources ret)
+           ret)))}))
 
 (defn config*
   "Looks up the keys in the maps.  If not found, log and return nil."
@@ -115,6 +122,33 @@
   "The default list of middleware carica uses."
   [eval-config
    cache-config])
+
+(defn get-config-fn [f]
+  {:post [f]}
+  (if (map? f)
+    (:carica/fn f)
+    f))
+
+(defn get-options [f]
+  {:post [f]}
+  (if (map? f)
+    (:carica/options f)
+    {}))
+
+(defn middleware-compose [f mw]
+  (let [f-fn (get-config-fn f)
+        f-options (get-options f)
+        mw-fn (get-config-fn mw)
+        mf-options (get-options mw)
+        new-f (mw-fn f-fn)
+        new-f-fn (get-config-fn new-f)
+        new-f-options (get-options new-f)]
+    {:carica/fn new-f-fn
+     :carica/options (merge f-options mf-options new-f-options)}))
+
+(defn a-arr [f]
+  {:carica/options {}
+   :carica/fn f})
 
 (defn configurer
   "Given a the list of resources in the format expected by get-configs,
@@ -130,10 +164,14 @@
   ([resources]
      (configurer resources default-middleware))
   ([resources middleware]
-     (let [config-fn (reduce (fn [f mw] (mw f)) get-configs middleware)]
+     (let [{config-fn :carica/fn
+            options :carica/options} (reduce middleware-compose (a-arr get-configs) middleware)]
+       (assert config-fn config-fn)
        (fn [& ks]
-         (config* (config-fn resources)
-                  ks)))))
+         (if (= (first ks) :carica/middleware)
+           (get-in options (rest ks))
+           (config* (config-fn resources)
+                    ks))))))
 
 (def ^:dynamic config
   "The default config function.  It searches for carica.clj and carica.json
