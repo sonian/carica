@@ -98,10 +98,9 @@
 
 (deftest test-reset
   (let [t0 (config :time)]
+    (Thread/sleep 10) ; avoid failures due to really fast execution?
     (testing "Still cached without a reset"
-      (Thread/sleep 10)
       (is (= t0 (config :time))))
     (testing "Config is re-read after a reset"
-      (Thread/sleep 10)
-      (reset-config!))
-    (is (< t0 (config :time)))))
+      (reset-config!)
+      (is (< t0 (config :time))))))
