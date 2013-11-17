@@ -82,6 +82,39 @@
            n))
    resources))
 
+(defn get-config-fn
+  "Retrieve the wrapped fn from the middleware, or return f if
+  it isn't wrapped."
+  [f]
+  {:post [f]}
+  (if (map? f)
+    (:carica/fn f)
+    f))
+
+(defn get-options
+  "Retrieve the exposed options from the wrapped middleware, or return
+  {} if the middleware isn't wrapped."
+  [f]
+  {:post [f]}
+  (if (map? f)
+    (:carica/options f)
+    {}))
+
+(defn unwrap-middleware-fn
+  "Convenience function for pulling the fn and options out of the
+  wrapped middleware.  It's easier to destructure a seq than a map
+  with namespaced keys."
+  [f]
+  [(get-config-fn f) (get-options f)])
+
+(defn wrap-middleware-fn
+  "Take the passed function and an optional map of options and return
+  the wrapped middleware map that the rest of the code expects to
+  use."
+  [f & [opt-map]]
+  {:carica/options (or opt-map {})
+   :carica/fn f})
+
 (defn eval-config
   "Config middleware that will evaluate the config map.  This allows
   arbitrary code to live in the config file.  It is often useful for
@@ -100,8 +133,15 @@
   "Config middleware that will cache the config map so that it is
   loaded only once."
   [f]
-  (memoize (fn [resources]
-             (f resources))))
+  (let [mem (atom {})]
+    (wrap-middleware-fn
+     (fn [resources]
+       (if-let [e (find @mem resources)]
+         (val e)
+         (let [ret (f resources)]
+           (swap! mem assoc resources ret)
+           ret)))
+     {:carica/mem mem})))
 
 (defn config*
   "Looks up the keys in the maps.  If not found, log and return nil."
@@ -115,6 +155,18 @@
   "The default list of middleware carica uses."
   [eval-config
    cache-config])
+
+(defn middleware-compose
+  "Unwrap and rewrap the function and middleware.  Used in a reduce to
+  create the actual config funtion that is eventually called to fetch
+  the values from the config map."
+  [f mw]
+  (let [[f-fn f-opts] (unwrap-middleware-fn f)
+        [mw-fn mw-opts] (unwrap-middleware-fn mw)
+        ;; mw-fn might return wrapped mw, so pull *it* apart as well
+        [new-f-fn new-f-opts] (unwrap-middleware-fn (mw-fn f-fn))]
+    (wrap-middleware-fn new-f-fn
+                        (merge f-opts mw-opts new-f-opts))))
 
 (defn configurer
   "Given a the list of resources in the format expected by get-configs,
@@ -130,10 +182,16 @@
   ([resources]
      (configurer resources default-middleware))
   ([resources middleware]
-     (let [config-fn (reduce (fn [f mw] (mw f)) get-configs middleware)]
+     (let [[config-fn options]
+           (unwrap-middleware-fn
+            (reduce middleware-compose
+                    (wrap-middleware-fn get-configs)
+                    middleware))]
        (fn [& ks]
-         (config* (config-fn resources)
-                  ks)))))
+         (if (= (first ks) :carica/middleware)
+           (get-in options (rest ks))
+           (config* (config-fn resources)
+                    ks))))))
 
 (def ^:dynamic config
   "The default config function.  It searches for carica.clj and carica.json
