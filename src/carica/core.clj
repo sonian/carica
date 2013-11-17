@@ -4,6 +4,8 @@
             [clojure.tools.reader.edn :as edn]
             [clojure.walk :as walk]))
 
+(declare config)
+
 (def json-enabled?
   "Determine if cheshire is loaded and json parsing is available."
   (try
@@ -148,6 +150,13 @@
            (swap! mem assoc resources ret)
            ret)))
      {:carica/mem mem})))
+
+(defn clear-config-cache
+  "Clear the cached config.  If a custom config function has been
+  defined, it must be passed in."
+  [& [config-fn]]
+  (when ((or config-fn config) :carica/middleware :carica/mem)
+    (swap! ((or config-fn config) :carica/middleware :carica/mem) empty)))
 
 (defn config*
   "Looks up the keys in the maps.  If not found, log and return nil."
