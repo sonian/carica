@@ -110,10 +110,10 @@ can use the `cache-config` middleware.
                          cache-config]))
 ```
 
-In typical middleware fashion, eval-config and cache-config are
+In typical middleware fashion, `eval-config` and `cache-config` are
 functions that take a function as their only argument and return a
 function that takes a list of resources as its only input.  For
-instance, an example cache-config function:
+instance, an example `cache-config` function:
 
 ```clojure
 (defn cache-config
@@ -128,7 +128,7 @@ instance, an example cache-config function:
 
 Middleware can also expose some internal state and options to the
 outside world by wrapping the function that is returned.  As an
-example, the actual cache-config function:
+example, the actual `cache-config` function:
 
 ```clojure
 (defn cache-config
@@ -154,9 +154,9 @@ This ultimately returns:
 ```
 
 This map is built up from all of the defined middleware so the keys
-used in the ```cache-config``` function should be unique.  To access
-the options, call ```config``` as normal with the beginning path of
-```:carica/middleware```.
+used in the `cache-config` function should be unique.  To access
+the options, call `config` as normal with the beginning path of
+`:carica/middleware`.
 
 For example:
 
@@ -164,9 +164,9 @@ For example:
 (swap! (cached-cfg :carica/middleware :carica/mem) empty)
 ```
 
-Note: Specifically in the the ```cache-config``` case there is a
-```clear-config-cache!``` function that can be called.  See the doc
-for that function if you use a custom defined ```config``` function.
+Note: Specifically in the the `cache-config` case there is a
+`clear-config-cache!` function that can be called.  See the doc
+for that function if you use a custom defined `config` function.
 
 ## Testing
 
