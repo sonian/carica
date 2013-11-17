@@ -5,6 +5,7 @@
             [clojure.walk :as walk]))
 
 (def json-enabled?
+  "Determine if cheshire is loaded and json parsing is available."
   (try
     (require 'cheshire.core)
     true
@@ -27,14 +28,19 @@
        (Thread/currentThread))
       path))))
 
-(defn merge-nested [v1 v2]
+(defn merge-nested
+  "Recursively merge two Clojure trees of maps."
+  [v1 v2]
   (if (and (map? v1) (map? v2))
     (merge-with merge-nested v1 v2)
     v2))
 
-(defmulti load-config (comp second
-                            (partial re-find #"\.([^..]*?)$")
-                            (memfn getPath)))
+(defmulti load-config
+  "Load and read the config into a map of Clojure maps.  Dispatches
+  based on the file extension."
+  (comp second
+        (partial re-find #"\.([^..]*?)$")
+        (memfn getPath)))
 
 (defmethod load-config "clj" [resource]
   (try
@@ -207,17 +213,26 @@
   (configurer (concat (resources "config.json")
                       (resources "config.clj"))))
 
-(defn reduce-into-map [overrides]
+(defn reduce-into-map
+  "Turns the flat list of keys -> value into a tree of maps.
+  E.g., [:foo :bar :baz 4] becomes {:foo {:bar {:baz 4}}}"
+  [overrides]
   (let [[val & keys] (reverse overrides)]
     (reduce (fn [v k] (hash-map k v)) val keys)))
 
-(defn overrider* [cfg-fn-var]
+(defn overrider*
+  "Creates a custom overrider function from the given config function
+  var."
+  [cfg-fn-var]
   (fn [& overrides]
     (let [c (merge-nested (cfg-fn-var) (reduce-into-map overrides))]
       (fn [& ks]
         (config* c ks)))))
 
-(defmacro overrider [cfg-fn]
+(defmacro overrider
+  "Convenience macro to get the var for the passed config function and
+  create the overrider function."
+  [cfg-fn]
   `(overrider* (var ~cfg-fn)))
 
 (def override-config
