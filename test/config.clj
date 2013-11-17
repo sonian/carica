@@ -1,5 +1,7 @@
 {:from-test true
 
+ :time (System/currentTimeMillis)
+
  :nil-val nil
 
  :merged-val "test"
