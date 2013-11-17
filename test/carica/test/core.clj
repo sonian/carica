@@ -110,6 +110,6 @@
       (is (= true (cached-cfg :from-test)))
       (is (= true (cached-cfg :from-test)))
       (is (= 1 @call-count))
-      (clear-config-cache cached-cfg)
+      (clear-config-cache! cached-cfg)
       (is (= true (cached-cfg :from-test)))
       (is (= 2 @call-count)))))

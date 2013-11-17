@@ -151,7 +151,7 @@
            ret)))
      {:carica/mem mem})))
 
-(defn clear-config-cache
+(defn clear-config-cache!
   "Clear the cached config.  If a custom config function has been
   defined, it must be passed in."
   [& [config-fn]]

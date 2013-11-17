@@ -165,8 +165,8 @@ For example:
 ```
 
 Note: Specifically in the the ```cache-config``` case there is a
-```clear-config-cache``` function that can be called.  See the doc for
-that function if you use a custom defined ```config``` function.
+```clear-config-cache!``` function that can be called.  See the doc
+for that function if you use a custom defined ```config``` function.
 
 ## Testing
 
