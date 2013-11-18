@@ -15,10 +15,10 @@ It offers:
 ## Setup
 
 ```clojure
-[sonian/carica "1.0.3"]
+[sonian/carica "1.0.4"]
 
 ;; *or*, when not using JSON config files:
-[sonian/carica "1.0.3" :exclusions [[cheshire]]]
+[sonian/carica "1.0.4" :exclusions [[cheshire]]]
 
 ;; carica is compatible with clojure 1.4+
 ```
@@ -110,10 +110,10 @@ can use the `cache-config` middleware.
                          cache-config]))
 ```
 
-In typical middleware fashion, eval-config and cache-config are
+In typical middleware fashion, `eval-config` and `cache-config` are
 functions that take a function as their only argument and return a
 function that takes a list of resources as its only input.  For
-instance, the cache-config function:
+instance, an example `cache-config` function:
 
 ```clojure
 (defn cache-config
@@ -123,6 +123,50 @@ instance, the cache-config function:
   (memoize (fn [resources]
              (f resources))))
 ```
+
+### Middleware options
+
+Middleware can also expose some internal state and options to the
+outside world by wrapping the function that is returned.  As an
+example, the actual `cache-config` function:
+
+```clojure
+(defn cache-config
+  "Config middleware that will cache the config map so that it is
+  loaded only once."
+  [f]
+  (let [mem (atom {})]
+    (wrap-middleware-fn
+     (fn [resources]
+       (if-let [e (find @mem resources)]
+         (val e)
+         (let [ret (f resources)]
+           (swap! mem assoc resources ret)
+           ret)))
+     {:carica/mem mem})))
+```
+
+This ultimately returns:
+
+```clojure
+{:carica/options {:carica/mem <the-cache-atom>}
+ :carica/fn <the-config-fn>}
+```
+
+This map is built up from all of the defined middleware so the keys
+used in the `cache-config` function should be unique.  To access
+the options, call `config` as normal with the beginning path of
+`:carica/middleware`.
+
+For example:
+
+```clojure
+(swap! (cached-cfg :carica/middleware :carica/mem) empty)
+```
+
+Note: Specifically in the the `cache-config` case there is a
+`clear-config-cache!` function that can be called.  See the doc
+for that function if you use a custom defined `config` function.
 
 ## Testing
 
