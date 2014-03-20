@@ -37,6 +37,14 @@
     (merge-with merge-nested v1 v2)
     v2))
 
+(defn load-edn [resource]
+  (try
+    (edn/read-string (slurp resource))
+    (catch Throwable t
+      (log/warn t "error reading config" resource)
+      (throw
+       (Exception. (str "error reading config " resource) t)))))
+
 (defmulti load-config
   "Load and read the config into a map of Clojure maps.  Dispatches
   based on the file extension."
@@ -45,12 +53,10 @@
         (memfn getPath)))
 
 (defmethod load-config "clj" [resource]
-  (try
-    (edn/read-string (slurp resource))
-    (catch Throwable t
-      (log/warn t "error reading config" resource)
-      (throw
-       (Exception. (str "error reading config " resource) t)))))
+  (load-edn resource))
+
+(defmethod load-config "edn" [resource]
+  (load-edn resource))
 
 (defmethod load-config "json" [resource]
   (with-open [s (.openStream resource)]
@@ -209,9 +215,9 @@
                     ks))))))
 
 (def ^:dynamic config
-  "The default config function.  It searches for carica.clj and carica.json
-  on the classpath (with json taking preference) and returns a fuction with
-  the signature of (fn [& ks] ...)
+  "The default config function.  It searches for config.json,
+   config.edn and config.clj on the classpath (in that order)
+   and returns a fuction with the signature of (fn [& ks] ...)
 
   To retrieve a config value in the following configuration...
 
@@ -220,6 +226,7 @@
 
   ...one would call (config :address :street) to retrieve \"42 Main St.\""
   (configurer (concat (resources "config.json")
+                      (resources "config.edn")
                       (resources "config.clj"))))
 
 (defn reduce-into-map
