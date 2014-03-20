@@ -37,7 +37,14 @@
     (merge-with merge-nested v1 v2)
     v2))
 
-(defn load-edn [resource]
+(defmulti load-config
+  "Load and read the config into a map of Clojure maps.  Dispatches
+  based on the file extension."
+  (comp (partial keyword "carica") second
+        (partial re-find #"\.([^..]*?)$")
+        (memfn getPath)))
+
+(defmethod load-config :carica/edn [resource]
   (try
     (edn/read-string (slurp resource))
     (catch Throwable t
@@ -45,22 +52,11 @@
       (throw
        (Exception. (str "error reading config " resource) t)))))
 
-(defmulti load-config
-  "Load and read the config into a map of Clojure maps.  Dispatches
-  based on the file extension."
-  (comp second
-        (partial re-find #"\.([^..]*?)$")
-        (memfn getPath)))
-
-(defmethod load-config "clj" [resource]
-  (load-edn resource))
-
-(defmethod load-config "edn" [resource]
-  (load-edn resource))
-
-(defmethod load-config "json" [resource]
+(defmethod load-config :carica/json [resource]
   (with-open [s (.openStream resource)]
     (-> s reader (json-parse-stream true))))
+
+(derive :carica/clj :carica/edn)
 
 (defn get-configs
   "Takes a data structure of config resources (URLs) in priority order and
