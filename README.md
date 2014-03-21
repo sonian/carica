@@ -9,16 +9,16 @@ It offers:
   * Even if one is a Clojure file and the other is JSON
 * code evaluation in Clojure files
 * runtime override capabilities for testing
-* easy default config file names (config.clj and config.json)
+* easy default config file names (config.edn, config.clj and config.json)
   * ability to override the defaults
 
 ## Setup
 
 ```clojure
-[sonian/carica "1.0.4"]
+[sonian/carica "1.1.0"]
 
 ;; *or*, when not using JSON config files:
-[sonian/carica "1.0.4" :exclusions [[cheshire]]]
+[sonian/carica "1.1.0" :exclusions [[cheshire]]]
 
 ;; carica is compatible with clojure 1.4+
 ```
@@ -27,7 +27,7 @@ Carica looks for the config files on the classpath.
 
 Leiningen will add a directory called "resources" to the classpath even 
 though the directory is not created by default, so create a "resources" 
-directory at the root of your project. Now, create and open "resources/config.clj" 
+directory at the root of your project. Now, create and open "resources/config.edn" 
 in your favorite editor.
 
 ```clojure
@@ -73,19 +73,23 @@ That's it!
 ## Overriding the defaults
 
 Maybe you already have a config file with a different name, or a
-config.clj that you use for a different purpose. No problem. To
+config.edn that you use for a different purpose. No problem. To
 override what files Carica loads you can create your own `config`
 function using the `configurer` function.
 
 If you override the default `config` function in this manner you must
 also override the `override-config` function if you intend to use it.
 
+`configurer` will take a sequence types supported by clojure.java.io,
+String, File, and URL.  `resources` will return a seq of matching
+files from the current classpath.
+
 ```clojure
 (ns my-proj.config
   (:require [carica.core :refer [configurer
                                  resources]]))
 
-(def config (configurer (resources "proj_config.clj")))
+(def config (configurer (resources "proj_config.edn")))
 (def override-config (overrider config))
 ```
 
@@ -105,7 +109,7 @@ can use the `cache-config` middleware.
   (:require [carica.core :refer [configurer
                                  resources]]))
 
-(def config (configurer (resources "proj_config.clj")
+(def config (configurer (resources "proj_config.edn")
                         [eval-config
                          cache-config]))
 ```
@@ -167,6 +171,22 @@ For example:
 Note: Specifically in the the `cache-config` case there is a
 `clear-config-cache!` function that can be called.  See the doc
 for that function if you use a custom defined `config` function.
+
+## File types
+
+Carica can be extended to support additional file types:
+
+(defmethod carica/load-config :carica/yaml [resource]
+  (try
+    ...
+    (catch Throwable t
+      (log/warn t "error reading config" resource)
+      (throw
+       (Exception. (str "error reading config " resource) t)))))
+
+To reuse the existing parsers for a different file extension:
+
+(derive :carcia/cfg :cardia/edn)
 
 ## Testing
 
