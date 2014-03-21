@@ -1,7 +1,8 @@
 (ns carica.core
-  (:use [clojure.java.io :only [reader]])
+  (:use [clojure.java.io :only [reader input-stream]])
   (:require [clojure.tools.logging :as log]
             [clojure.tools.reader.edn :as edn]
+            [clojure.tools.reader.reader-types :as readers]
             [clojure.walk :as walk]))
 
 (declare config)
@@ -46,7 +47,7 @@
 
 (defmethod load-config :carica/edn [resource]
   (try
-    (edn/read-string (slurp resource))
+    (-> resource input-stream readers/input-stream-push-back-reader edn/read)
     (catch Throwable t
       (log/warn t "error reading config" resource)
       (throw
