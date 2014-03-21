@@ -123,3 +123,9 @@
         url (java.net.URL. (str "jar:" jar "!/config.edn"))
         cfg (configurer [url])]
     (is (= true (cfg :jar-resource)))))
+
+(deftest test-configurer-with-other-io-types
+  (let [config (configurer ["test/config.edn"])]
+    (is (= "test-edn" (config :test-edn))))
+  (let [config (configurer [(io/file "test/config.edn")])]
+    (is (= "test-edn" (config :test-edn)))))

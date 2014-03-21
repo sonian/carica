@@ -1,5 +1,5 @@
 (ns carica.core
-  (:use [clojure.java.io :only [reader input-stream]])
+  (:use [clojure.java.io :only [reader input-stream] :as io])
   (:require [clojure.tools.logging :as log]
             [clojure.tools.reader.edn :as edn]
             [clojure.tools.reader.reader-types :as readers]
@@ -43,7 +43,7 @@
   based on the file extension."
   (comp (partial keyword "carica") second
         (partial re-find #"\.([^..]*?)$")
-        (memfn getPath)))
+        #(if (string? %) % (.getPath %))))
 
 (defmethod load-config :carica/edn [resource]
   (try
@@ -80,15 +80,15 @@
   [resources]
   (walk/postwalk
    (fn [n]
-     (cond (= java.net.URL (class n))
-           (load-config n)
-           (map? n)
+     (cond (map? n)
            n
            ;; don't include vectorized maps
            (and (coll? n) (coll? (first n)))
            (apply merge-with merge-nested (reverse n))
            (nil? n)
            {}
+           (satisfies? io/Coercions n)
+           (load-config n)
            :else
            n))
    resources))
