@@ -77,12 +77,12 @@ config.edn that you use for a different purpose. No problem. To
 override what files Carica loads you can create your own `config`
 function using the `configurer` function.
 
+Given a the list of resources in the format expected by get-configs,
+return a function that can be used to search the configuration files.
+The list of resources be Strings, Files or URLs.
+
 If you override the default `config` function in this manner you must
 also override the `override-config` function if you intend to use it.
-
-`configurer` will take a sequence types supported by clojure.java.io,
-String, File, and URL.  `resources` will return a seq of matching
-files from the current classpath.
 
 ```clojure
 (ns my-proj.config
@@ -186,7 +186,7 @@ Carica can be extended to support additional file types:
 
 To reuse the existing parsers for a different file extension:
 
-(derive :carcia/cfg :cardia/edn)
+(derive :carica/cfg :carica/edn)
 
 ## Testing
 
