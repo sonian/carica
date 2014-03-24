@@ -15,10 +15,10 @@ It offers:
 ## Setup
 
 ```clojure
-[sonian/carica "1.1.0"]
+[sonian/carica "1.1.0-SNAPSHOT"]
 
 ;; *or*, when not using JSON config files:
-[sonian/carica "1.1.0" :exclusions [[cheshire]]]
+[sonian/carica "1.1.0-SNAPSHOT" :exclusions [[cheshire]]]
 
 ;; carica is compatible with clojure 1.4+
 ```
