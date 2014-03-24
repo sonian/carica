@@ -77,9 +77,9 @@ config.edn that you use for a different purpose. No problem. To
 override what files Carica loads you can create your own `config`
 function using the `configurer` function.
 
-Given a the list of resources in the format expected by get-configs,
-return a function that can be used to search the configuration files.
-The list of resources be Strings, Files or URLs.
+Given a list of resources in the format expected by get-configs,
+`configurer` will return a function to query configuration.
+The list of resources can contain Strings, Files or URLs.
 
 If you override the default `config` function in this manner you must
 also override the `override-config` function if you intend to use it.
