@@ -7,3 +7,6 @@
 /checkouts
 /.lein-deps-sum
 /target
+.cider-history
+.nrepl-history
+.nrepl-port
