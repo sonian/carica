@@ -10,4 +10,7 @@
 
  :test-json "test-clj"
  :nested-one-json {:test-json "test-clj"}
- :nested-multi-json {:test-json {:test-json "test-clj"}}}
+ :nested-multi-json {:test-json {:test-json "test-clj"}}
+
+ :quoted-vectors-work '[a b c]
+ :read-eval-works #=(eval (+ 2 (* 10 4)))}
