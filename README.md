@@ -4,9 +4,10 @@ Carica is a flexible configuration library.
 
 It offers:
 * a simple lookup syntax
-* support for both Clojure and JSON config files
+* built-in support for Clojure, EDN, and JSON config files
+  * easy-to-add support for other formats
 * config file merging (if you have more than one config file)
-  * Even if one is a Clojure file and the other is JSON
+  * even if one is a Clojure file and the other is JSON
 * code evaluation in Clojure files
 * runtime override capabilities for testing
 * easy default config file names (config.edn, config.clj and config.json)
@@ -28,7 +29,7 @@ Carica looks for the config files on the classpath.
 Leiningen will add a directory called "resources" to the classpath even 
 though the directory is not created by default, so create a "resources" 
 directory at the root of your project. Now, create and open "resources/config.edn" 
-in your favorite editor.
+in your favorite editor.  (The following will be evaluated by the eval middleware.)
 
 ```clojure
 {:foobar-timeout 300 #_"In seconds"
@@ -174,19 +175,39 @@ for that function if you use a custom defined `config` function.
 
 ## File types
 
-Carica can be extended to support additional file types:
+Out of the box Carica supports Clojure, EDN, and JSON config files.
+More can be added as described below.
 
+### Differences between EDN and CLJ files
+
+There are some differences in behavior between EDN and CLJ.  Clojure
+config files will be loaded by the Clojure reader and will read-eval
+forms if `*read-eval*` is true.  EDN config files, however, do not
+support any notion of `read-eval`.  The eval middleware will still
+evaluate it.
+
+There are also some differences in how some forms are read.  For
+instance, `{:foo '[a b c]}` will prevent an EDN config file from
+loading but will load as `{:foo (quote [a b c])}` in a CLJ config
+file.
+
+### Extend Carica to support additional file types
+
+```clojure
 (defmethod carica/load-config :carica/yaml [resource]
   (try
-    ...
+    ;; ... 
     (catch Throwable t
       (log/warn t "error reading config" resource)
       (throw
        (Exception. (str "error reading config " resource) t)))))
+```
 
 To reuse the existing parsers for a different file extension:
 
+```clojure
 (derive :carica/cfg :carica/edn)
+```
 
 ## Testing
 
@@ -230,6 +251,6 @@ building the classpath by hand.
 
 ## License
 
-Copyright (C) 2013 Sonian, Inc.
+Copyright © 2012-2014 Sonian, Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.

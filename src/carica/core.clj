@@ -1,6 +1,7 @@
 (ns carica.core
   (:use [clojure.java.io :only [reader input-stream] :as io])
   (:require [clojure.tools.logging :as log]
+            [clojure.tools.reader :as clj-reader]
             [clojure.tools.reader.edn :as edn]
             [clojure.tools.reader.reader-types :as readers]
             [clojure.walk :as walk]))
@@ -38,20 +39,30 @@
     (merge-with merge-nested v1 v2)
     v2))
 
-(defmulti load-config
-  "Load and read the config into a map of Clojure maps.  Dispatches
-  based on the file extension."
-  (comp (partial keyword "carica") second
-        (partial re-find #"\.([^..]*?)$")
-        #(if (string? %) % (.getPath %))))
-
-(defmethod load-config :carica/edn [resource]
+(defn load-with [resource loader]
   (try
-    (-> resource input-stream readers/input-stream-push-back-reader edn/read)
+    (-> resource input-stream readers/input-stream-push-back-reader loader)
     (catch Throwable t
       (log/warn t "error reading config" resource)
       (throw
        (Exception. (str "error reading config " resource) t)))))
+
+(defmulti load-config
+  "Load and read the config into a map of Clojure maps.  Dispatches
+  based on the file extension."
+  (fn [resource]
+    (->> (if (string? resource)
+           resource
+           (.getPath resource))
+         (re-find #"\.([^..]*?)$")
+         second
+         (keyword "carica"))))
+
+(defmethod load-config :carica/edn [resource]
+  (load-with resource edn/read))
+
+(defmethod load-config :carica/clj [resource]
+  (load-with resource clj-reader/read))
 
 (defmethod load-config :carica/json [resource]
   (with-open [s (.openStream resource)]
