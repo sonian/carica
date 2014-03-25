@@ -132,11 +132,12 @@
 
 (deftest test-clj-vs-edn
   (with-redefs [write! (fn [& _] nil)]
-    (let [edn-config (configurer (resources "edn-reader-cfg.edn") [])
+    (let [edn-config (configurer (resources "edn-reader-config.edn") [])
           clj-config (configurer (resources "config.clj") [])]
       (is (= '(quote [a b c]) (clj-config :quoted-vectors-work)))
       (is (= 42 (clj-config :read-eval-works)))
       ;; quoted vectors in edn aren't read as one might expect.  They
       ;; end up as a map like {:foo } and throw an error.  Carica
       ;; catches the error and sends a warning to the log.
-      (is (nil? (edn-config :quoted-vectors-fail))))))
+      (is (thrown-with-msg? Exception #"^error reading config.*"
+                            (edn-config :quoted-vectors-fail))))))
