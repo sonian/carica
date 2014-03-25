@@ -41,9 +41,13 @@
 (defmulti load-config
   "Load and read the config into a map of Clojure maps.  Dispatches
   based on the file extension."
-  (comp (partial keyword "carica") second
-        (partial re-find #"\.([^..]*?)$")
-        #(if (string? %) % (.getPath %))))
+  (fn [resource]
+    (->> (if (string? resource)
+           resource
+           (.getPath resource))
+         (re-find #"\.([^..]*?)$")
+         second
+         (keyword "carica"))))
 
 (defmethod load-config :carica/edn [resource]
   (try
