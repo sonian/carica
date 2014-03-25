@@ -4,9 +4,10 @@ Carica is a flexible configuration library.
 
 It offers:
 * a simple lookup syntax
-* support for both Clojure, EDN, and JSON config files
+* built-in support for Clojure, EDN, and JSON config files
+  * easy-to-add support for other formats
 * config file merging (if you have more than one config file)
-  * Even if one is a Clojure file and the other is JSON
+  * even if one is a Clojure file and the other is JSON
 * code evaluation in Clojure files
 * runtime override capabilities for testing
 * easy default config file names (config.edn, config.clj and config.json)
