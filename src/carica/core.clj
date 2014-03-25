@@ -1,7 +1,8 @@
 (ns carica.core
-  (:use [clojure.java.io :only [reader]])
+  (:use [clojure.java.io :only [reader input-stream] :as io])
   (:require [clojure.tools.logging :as log]
             [clojure.tools.reader.edn :as edn]
+            [clojure.tools.reader.reader-types :as readers]
             [clojure.walk :as walk]))
 
 (declare config)
@@ -40,21 +41,23 @@
 (defmulti load-config
   "Load and read the config into a map of Clojure maps.  Dispatches
   based on the file extension."
-  (comp second
+  (comp (partial keyword "carica") second
         (partial re-find #"\.([^..]*?)$")
-        (memfn getPath)))
+        #(if (string? %) % (.getPath %))))
 
-(defmethod load-config "clj" [resource]
+(defmethod load-config :carica/edn [resource]
   (try
-    (edn/read-string (slurp resource))
+    (-> resource input-stream readers/input-stream-push-back-reader edn/read)
     (catch Throwable t
       (log/warn t "error reading config" resource)
       (throw
        (Exception. (str "error reading config " resource) t)))))
 
-(defmethod load-config "json" [resource]
+(defmethod load-config :carica/json [resource]
   (with-open [s (.openStream resource)]
     (-> s reader (json-parse-stream true))))
+
+(derive :carica/clj :carica/edn)
 
 (defn get-configs
   "Takes a data structure of config resources (URLs) in priority order and
@@ -77,15 +80,15 @@
   [resources]
   (walk/postwalk
    (fn [n]
-     (cond (= java.net.URL (class n))
-           (load-config n)
-           (map? n)
+     (cond (map? n)
            n
            ;; don't include vectorized maps
            (and (coll? n) (coll? (first n)))
            (apply merge-with merge-nested (reverse n))
            (nil? n)
            {}
+           (satisfies? io/Coercions n)
+           (load-config n)
            :else
            n))
    resources))
@@ -209,9 +212,9 @@
                     ks))))))
 
 (def ^:dynamic config
-  "The default config function.  It searches for carica.clj and carica.json
-  on the classpath (with json taking preference) and returns a fuction with
-  the signature of (fn [& ks] ...)
+  "The default config function.  It searches for config.json,
+   config.edn and config.clj on the classpath (in that order)
+   and returns a fuction with the signature of (fn [& ks] ...)
 
   To retrieve a config value in the following configuration...
 
@@ -220,6 +223,7 @@
 
   ...one would call (config :address :street) to retrieve \"42 Main St.\""
   (configurer (concat (resources "config.json")
+                      (resources "config.edn")
                       (resources "config.clj"))))
 
 (defn reduce-into-map

@@ -1,7 +1,8 @@
 (ns carica.test.core
   (:require [carica.core :refer :all]
             [clojure.test :refer :all]
-            [clojure.tools.logging.impl :refer [write!]]))
+            [clojure.tools.logging.impl :refer [write!]]
+            [clojure.java.io :as io]))
 
 (deftest config-test
   (testing "config"
@@ -113,3 +114,18 @@
       (clear-config-cache! cached-cfg)
       (is (= true (cached-cfg :from-test)))
       (is (= 2 @call-count)))))
+
+(deftest test-edn-config
+  (is (= "test-edn" (config :test-edn))))
+
+(deftest test-config-embedded-in-jar
+  (let [jar (-> "uberjared.jar" io/resource str)
+        url (java.net.URL. (str "jar:" jar "!/config.edn"))
+        cfg (configurer [url])]
+    (is (= true (cfg :jar-resource)))))
+
+(deftest test-configurer-with-other-io-types
+  (let [config (configurer ["test/config.edn"])]
+    (is (= "test-edn" (config :test-edn))))
+  (let [config (configurer [(io/file "test/config.edn")])]
+    (is (= "test-edn" (config :test-edn)))))
