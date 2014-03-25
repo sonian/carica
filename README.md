@@ -250,6 +250,6 @@ building the classpath by hand.
 
 ## License
 
-Copyright © 2013-2014 Sonian, Inc.
+Copyright © 2012-2014 Sonian, Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.
