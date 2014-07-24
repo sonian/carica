@@ -53,7 +53,7 @@
   (fn [resource]
     (->> (if (string? resource)
            resource
-           (.getPath resource))
+           (.getPath ^java.io.File resource))
          (re-find #"\.([^..]*?)$")
          second
          (keyword "carica"))))
@@ -65,7 +65,7 @@
   (load-with resource clj-reader/read))
 
 (defmethod load-config :carica/json [resource]
-  (with-open [s (.openStream resource)]
+  (with-open [s (.openStream ^java.net.URL resource)]
     (-> s reader (json-parse-stream true))))
 
 (derive :carica/clj :carica/edn)
