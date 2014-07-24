@@ -6,7 +6,8 @@
                  [org.clojure/tools.reader "0.8.3"]]
   :profiles {:dev
              {:resource-paths ["etc"]
-              :dependencies [[org.clojure/clojure "1.5.1"]]}
+              :dependencies [[org.clojure/clojure "1.6.0"]]}
+             :1.5.1 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}}
   :aliases {"all" ["with-profile" "dev:1.4,dev"]}
   ;; For Lein 1
