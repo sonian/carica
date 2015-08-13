@@ -47,3 +47,35 @@
       (clear-config-cache! cached-cfg)
       (is (= true (cached-cfg :from-test)))
       (is (= 2 @call-count)))))
+
+(deftest test-env-override-config
+  (let [env (atom "prod")]
+    (with-redefs [write! (fn [& _]) ;; quiet the warnings
+                  getenv (fn [_] @env)]
+      (testing "config overriding works"
+        (let [env-config (configurer
+                          (resources "config.clj")
+                          [(env-override-config "NOOP" :env-config)])]
+          (is (= "please" (env-config :magic-word)))
+          (is (= "sugar on top" (env-config :extra)))))
+      (testing "a different env"
+        (reset! env "dev")
+        (let [env-config (configurer
+                          (resources "config.clj")
+                          [(env-override-config "NOOP" :env-config)])]
+          (is (= "abrakadabra" (env-config :magic-word)))
+          (is (nil? (env-config :extra)))))
+      (testing "nonexistant env doesn't meddle"
+        (reset! env "test")
+        (let [env-config (configurer
+                          (resources "config.clj")
+                          [(env-override-config "NOOP" :env-config)])]
+          (is (= "mellon" (env-config :magic-word)))
+          (is (nil? (env-config :extra)))))
+      (testing "parent key can be nil"
+        (reset! env "prod")
+        (let [env-config (configurer
+                          (resources "config.clj")
+                          [(env-override-config "NOOP")])]
+          (is (= "hocus pocus" (env-config :magic-word)))
+          (is (nil? (env-config :extra))))))))

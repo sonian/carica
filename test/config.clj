@@ -13,4 +13,12 @@
  :nested-multi-json {:test-json {:test-json "test-clj"}}
 
  :quoted-vectors-work '[a b c]
- :read-eval-works #=(eval (+ 2 (* 10 4)))}
+ :read-eval-works #=(eval (+ 2 (* 10 4)))
+
+ :magic-word "mellon"
+
+ :prod {:magic-word "hocus pocus"}
+
+ :env-config {:dev {:magic-word "abrakadabra"}
+              :prod {:magic-word "please"
+                     :extra "sugar on top"}}}

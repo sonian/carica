@@ -82,3 +82,47 @@
     (when (config-fn :carica/middleware :carica/mem)
       (swap! (config-fn :carica/middleware :carica/mem) empty))))
 
+(defn getenv
+  "This indirection allows overriding in tests"
+  [env-var-name]
+  (System/getenv env-var-name))
+
+(defn env-override-config
+  "Middleware that will override keys based on the value of a
+  configurable environment variable and optional parent key.
+
+  The environment variable defaults to CARICA_ENV with no parent
+  key in the map.
+
+  E.g., given the following config map:
+
+  {:some :other
+   :values :here
+   :retries 1
+   :env-override
+   {:prod {:some :awesome :retries 5}}}
+
+  Then adding the following to the list of Carica middleware
+  will result in the config shown below.
+
+  (env-override-config \"MY_CFG_VAR\" :env-override)
+
+  {:some :awesome
+   :values :here
+   :retries 5}"
+  ([]
+   (env-override-config "CARICA_ENV"))
+  ([env-var-name]
+   (env-override-config env-var-name nil))
+  ([env-var-name parent-key]
+   (let [env (keyword (getenv env-var-name))
+         env-path (if parent-key
+                    [parent-key env]
+                    [env])]
+     (fn [f]
+       (fn [resources]
+         (let [cfg-map (f resources)
+               env-cfg (get-in cfg-map env-path)]
+           (if (and env (map? env-cfg))
+             (merge cfg-map env-cfg)
+             cfg-map)))))))
