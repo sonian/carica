@@ -17,8 +17,10 @@
 
  :magic-word "mellon"
 
- :prod {:magic-word "hocus pocus"}
+ :prod {:magic-word "hocus pocus"
+        :test {:nested {:map 1}}}
 
  :env-config {:dev {:magic-word "abrakadabra"}
               :prod {:magic-word "please"
-                     :extra "sugar on top"}}}
+                     :extra "sugar on top"
+                     :test {:nested {:map 2}}}}}

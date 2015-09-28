@@ -57,7 +57,8 @@
                           (resources "config.clj")
                           [(env-override-config "NOOP" :env-config)])]
           (is (= "please" (env-config :magic-word)))
-          (is (= "sugar on top" (env-config :extra)))))
+          (is (= "sugar on top" (env-config :extra)))
+          (is (= 2 (env-config :test :nested :map)))))
       (testing "a different env"
         (reset! env "dev")
         (let [env-config (configurer

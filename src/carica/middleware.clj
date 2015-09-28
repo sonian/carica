@@ -1,5 +1,6 @@
 (ns carica.middleware
-  (:require [clojure.tools.logging :as log]))
+  (:require [carica.map :refer [merge-nested]]
+            [clojure.tools.logging :as log]))
 
 (defn get-config-fn
   "Retrieve the wrapped fn from the middleware, or return f if
@@ -124,5 +125,5 @@
          (let [cfg-map (f resources)
                env-cfg (get-in cfg-map env-path)]
            (if (and env (map? env-cfg))
-             (merge cfg-map env-cfg)
+             (merge-nested cfg-map env-cfg)
              cfg-map)))))))
