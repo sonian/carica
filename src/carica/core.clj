@@ -1,5 +1,6 @@
 (ns carica.core
-  (:require [carica.middleware :as mw]
+  (:require [carica.map :refer [merge-nested]]
+            [carica.middleware :as mw]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
             [clojure.tools.reader :as clj-reader]
@@ -32,13 +33,6 @@
       (.getContextClassLoader
        (Thread/currentThread))
       path))))
-
-(defn merge-nested
-  "Recursively merge two Clojure trees of maps."
-  [v1 v2]
-  (if (and (map? v1) (map? v2))
-    (merge-with merge-nested v1 v2)
-    v2))
 
 (defn load-with [resource loader]
   (try
