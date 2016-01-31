@@ -88,6 +88,7 @@ also override the `override-config` function if you intend to use it.
 ```clojure
 (ns my-proj.config
   (:require [carica.core :refer [configurer
+                                 overrider
                                  resources]]))
 
 (def config (configurer (resources "proj_config.edn")))
