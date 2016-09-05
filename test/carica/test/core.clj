@@ -86,6 +86,14 @@
   (let [config (configurer [(io/file "test/config.edn")])]
     (is (= "test-edn" (config :test-edn)))))
 
+(deftest test-configurer-closes-its-stream
+  (let [config (configurer ["test/config.edn"] [])]
+    (try
+      (dotimes [_ 100000]
+        (config :test-edn))
+      (catch java.io.IOException e
+        (is false "should close input stream")))))
+
 (deftest test-clj-vs-edn
   (with-redefs [write! (fn [& _] nil)]
     (let [edn-config (configurer (resources "edn-reader-config.edn") [])
