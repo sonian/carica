@@ -5,7 +5,6 @@
             [clojure.tools.logging :as log]
             [clojure.tools.reader :as clj-reader]
             [clojure.tools.reader.edn :as edn]
-            [clojure.tools.reader.reader-types :as readers]
             [clojure.walk :as walk]))
 
 (declare config)
@@ -36,7 +35,10 @@
 
 (defn load-with [resource loader]
   (try
-    (-> resource io/input-stream readers/input-stream-push-back-reader loader)
+    (with-open [in (-> resource
+                       io/reader
+                       java.io.PushbackReader.)]
+      (loader in))
     (catch Throwable t
       (log/warn t "error reading config" resource)
       (throw
