@@ -127,3 +127,27 @@
            (if (and env (map? env-cfg))
              (merge-nested cfg-map env-cfg)
              cfg-map)))))))
+
+(defn env-substitute-config
+  "Middleware that will override a known key with the value of an environment
+  variable.
+
+  Given this config map:
+  {:something 1
+   :otherthing 2}
+
+  Given this middleware definition:
+  (env-substitute-config \"MY_OTHER_THING\" :otherthing)
+
+  Given an execution environment with a definition like this
+  export MY_OTHER_THING=5
+
+  This config will result:
+  {:something 1
+   :otherthing 5}"
+  [env-var-name & keyseq]
+  (let [env-val (getenv env-var-name)]
+    (fn [f]
+      (fn [resources]
+        (let [cfg-map (f resources)]
+          (assoc-in cfg-map keyseq env-val))))))
