@@ -80,3 +80,16 @@
                           [(env-override-config "NOOP")])]
           (is (= "hocus pocus" (env-config :magic-word)))
           (is (nil? (env-config :extra))))))))
+
+(deftest test-env-substitute-config
+  (with-redefs [getenv (constantly "Now.")]
+    (testing "the envvar value is in the location"
+      (let [env-config (configurer
+                        (resources "config.clj")
+                        [(env-substitute-config "NOOP" :magic-word)
+                         (env-substitute-config "NOOP"
+                                                :i-totally :dont-exist)])]
+        (is (= "Now." (env-config :magic-word))
+            "Should see our overridden value.")
+        (is (= "Now." (env-config :i-totally :dont-exist))
+            "Nested key paths should work, even if they aren't defined.")))))
