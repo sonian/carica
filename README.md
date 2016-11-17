@@ -16,12 +16,10 @@ It offers:
 ## Setup
 
 ```clojure
-[sonian/carica "1.2.1"]
+[sonian/carica "1.2.2"]
 
 ;; *or*, when not using JSON config files:
-[sonian/carica "1.2.1" :exclusions [[cheshire]]]
-
-;; carica is compatible with clojure 1.4+
+[sonian/carica "1.2.2" :exclusions [[cheshire]]]
 ```
 
 Carica looks for the config files on the classpath.
@@ -252,6 +250,6 @@ building the classpath by hand.
 
 ## License
 
-Copyright © 2012-2014 Sonian, Inc.
+Copyright © 2012-2016 Sonian, Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.
