@@ -82,8 +82,8 @@
           (is (nil? (env-config :extra))))))))
 
 (deftest test-env-substitute-config
-  (with-redefs [getenv (constantly "Now.")]
-    (testing "the envvar value is in the location"
+  (testing "the envvar value is in the location"
+    (with-redefs [getenv (constantly "Now.")]
       (let [env-config (configurer
                         (resources "config.clj")
                         [(env-substitute-config "NOOP" :magic-word)
@@ -92,4 +92,11 @@
         (is (= "Now." (env-config :magic-word))
             "Should see our overridden value.")
         (is (= "Now." (env-config :i-totally :dont-exist))
-            "Nested key paths should work, even if they aren't defined.")))))
+            "Nested key paths should work, even if they aren't defined."))))
+  (testing "a missing envvar returns the configured default"
+    (with-redefs [getenv (constantly nil)]
+      (let [env-config (configurer
+                        (resources "config.clj")
+                        [(env-substitute-config "NOOP" :magic-word)])]
+        (is (= "mellon" (env-config :magic-word))
+            "Should see our configured default value.")))))
