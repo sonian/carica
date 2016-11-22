@@ -150,4 +150,6 @@
     (fn [f]
       (fn [resources]
         (let [cfg-map (f resources)]
-          (assoc-in cfg-map keyseq env-val))))))
+          (if-not (nil? env-val)
+            (assoc-in cfg-map keyseq env-val)
+            cfg-map))))))
