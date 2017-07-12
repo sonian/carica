@@ -5,7 +5,8 @@
             [clojure.tools.logging :as log]
             [clojure.tools.reader :as clj-reader]
             [clojure.tools.reader.edn :as edn]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk])
+  (:import [java.net URL]))
 
 (declare config)
 
@@ -50,7 +51,7 @@
   (fn [resource]
     (->> (if (string? resource)
            resource
-           (.getPath resource))
+           (.getPath ^URL resource))
          (re-find #"\.([^..]*?)$")
          second
          (keyword "carica"))))
@@ -61,7 +62,7 @@
 (defmethod load-config :carica/clj [resource]
   (load-with resource clj-reader/read))
 
-(defmethod load-config :carica/json [resource]
+(defmethod load-config :carica/json [^URL resource]
   (with-open [s (.openStream resource)]
     (-> s io/reader (json-parse-stream true))))
 
